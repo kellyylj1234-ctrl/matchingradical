@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>部件配对 · 汉字魔法墙 | 欢乐背景音乐</title>
+    <style>
+        * {
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #B0E2FF 0%, #87CEEB 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Noto Sans CJK SC', 'PingFang SC', '楷体', '微软雅黑', cursive;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+        }
+
+        .game-container {
+            max-width: 1300px;
+            width: 100%;
+            background: #fff7e8;
+            border-radius: 64px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(255, 255, 200, 0.9);
+            overflow: hidden;
+            padding: 20px 24px 30px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .score-board {
+            background: #4b2e1a;
+            padding: 8px 24px;
+            border-radius: 60px;
+            color: #ffefb9;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: inset 0 -2px 0 #2a1a0e, 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .score-board span {
+            font-size: 2rem;
+            color: #ffcd7e;
+            margin-right: 8px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .music-btn, .reset-btn {
+            background: #e7b15d;
+            border: none;
+            font-size: 1.3rem;
+            padding: 8px 22px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #8b5a2b;
+            transition: 0.07s linear;
+            color: #2c1d0f;
+        }
+
+        .music-btn:active, .reset-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #8b5a2b;
+        }
+
+        .word-wall {
+            background: #f9efdb;
+            border-radius: 48px;
+            padding: 16px 20px;
+            margin-bottom: 35px;
+            border: 3px solid #e2bc7c;
+            box-shadow: inset 0 0 0 3px #fff6e6, 0 8px 18px rgba(0,0,0,0.1);
+            min-height: 140px;
+        }
+
+        .wall-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #c0813b;
+            display: inline-block;
+            padding: 5px 24px;
+            border-radius: 40px;
+            color: white;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            box-shadow: inset 0 -1px 0 #6a3e1a;
+        }
+
+        .wall-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .wall-card {
+            background: linear-gradient(145deg, #FFF9E6 0%, #FFF0D0 100%);
+            width: 85px;
+            height: 85px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #4a2a10;
+            box-shadow: 0 8px 0 #b97a3c;
+            transform: translateY(-2px);
+            font-family: '楷体', 'Segoe UI', monospace;
+            border: 1px solid #ffdd99;
+        }
+
+        .pair-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+
+        .part-column {
+            flex: 1;
+            min-width: 260px;
+            background: #fff9ef;
+            border-radius: 56px;
+            padding: 20px 12px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .part-column h2 {
+            text-align: center;
+            font-size: 1.7rem;
+            margin: 0 0 20px 0;
+            color: #b46f38;
+            border-bottom: 3px solid #f3d382;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+        }
+
+        .part-card {
+            width: 100px;
+            height: 100px;
+            background: #fff2e2;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.08s linear;
+            box-shadow: 0 8px 0 #c29a6b;
+            color: #4d2f14;
+            border: 2px solid #ffdeae;
+            font-family: 'Segoe UI', 'Noto Sans CJK SC', monospace;
+        }
+
+        .part-card.selected {
+            background: #f7bc6c;
+            box-shadow: 0 4px 0 #a5652a;
+            transform: translateY(4px);
+            color: white;
+            border-color: #ffb347;
+        }
+
+        .part-card.paired {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.7);
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+
+        .win-message {
+            text-align: center;
+            margin-top: 25px;
+            background: #e7b469;
+            padding: 12px;
+            border-radius: 60px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2b1c0c;
+            transition: 0.2s;
+        }
+
+        .music-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #ffefb9;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 2000;
+            pointer-events: none;
+            font-weight: bold;
+            backdrop-filter: blur(4px);
+            transition: opacity 1s;
+        }
+
+        .fly-card {
+            position: fixed;
+            z-index: 1000;
+            width: 85px;
+            height: 85px;
+            background: #ffd966;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            transition: all 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            pointer-events: none;
+        }
+
+        @media (max-width: 700px) {
+            .part-card {
+                width: 75px;
+                height: 75px;
+                font-size: 1.8rem;
+            }
+            .wall-card {
+                width: 65px;
+                height: 65px;
+                font-size: 1.7rem;
+            }
+            .score-board {
+                font-size: 1.2rem;
+                padding: 4px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-header">
+        <div class="score-board">🏅 配对进度 <span id="scoreValue">0</span> / <span id="totalCount"></span></div>
+        <div class="control-buttons">
+            <button class="music-btn" id="musicToggleBtn">🎵 音乐开</button>
+            <button class="reset-btn" id="resetGameBtn">🔄 重来</button>
+        </div>
+    </div>
+
+    <div class="word-wall">
+        <div class="wall-title">📚 生字荣誉墙</div>
+        <div class="wall-cards" id="wallContainer"></div>
+    </div>
+
+    <div class="pair-zone">
+        <div class="part-column">
+            <h2>🔤 左边部件</h2>
+            <div class="card-grid" id="leftPartsContainer"></div>
+        </div>
+        <div class="part-column">
+            <h2>📝 右边部件</h2>
+            <div class="card-grid" id="rightPartsContainer"></div>
+        </div>
+    </div>
+    <div id="winMessage" class="win-message" style="display: none;">🎉 太棒啦！所有汉字配对成功！ 🎉</div>
+</div>
+
+<div id="musicHint" class="music-hint">🎵 点击页面任意区域，开启背景音乐~</div>
+
+<!-- 背景音乐元素 (请将您的音乐文件命名为 bgm.mp3 放在同一目录) -->
+<audio id="bgmAudio" loop preload="auto">
+    <source src="bgm.mp3" type="audio/mpeg">
+    您的浏览器不支持 audio 元素。
+</audio>
+
+<script>
+    // ----------------------------- 汉字拆分数据 ---------------------------------
+    const HANZI_PAIRS = [
+        { left: "讠", right: "青", character: "请" },
+        { left: "ㄔ", right: "艮", character: "很" },
+        { left: "辶", right: "井", character: "进" },
+        { left: "另", right: "刂", character: "别" },
+        { left: "扌", right: "喿", character: "操" },
+        { left: "口", right: "玉", character: "国" },
+        { left: "礻", right: "乚", character: "礼" },
+        { left: "⺌", right: "土", character: "堂" },
+        { left: "立", right: "占", character: "站" },
+        { left: "孝", right: "攵", character: "教" },
+        { left: "宀", right: "至", character: "室" },
+        { left: "月", right: "㐫", character: "脑" },
+        { left: "艹", right: "央", character: "英" },
+        { left: "氵", right: "又", character: "汉" }
+    ];
+
+    const TOTAL_PAIRS = HANZI_PAIRS.length;
+
+    // 游戏状态
+    let leftItems = [];      
+    let rightItems = [];     
+    let selectedLeftId = null;   
+    let currentScore = 0;
+    let gameFinished = false;
+
+    // 音频相关
+    let audioCtx = null;          // 用于配对音效
+    let musicEnabled = true;      // 背景音乐开关
+    let bgmAudio = null;          // 背景音乐元素
+
+    // 辅助函数：初始化 / 重置数据 (打乱顺序)
+    function initGameData() {
+        const leftList = [];
+        const rightList = [];
+        for (let i = 0; i < HANZI_PAIRS.length; i++) {
+            const pair = HANZI_PAIRS[i];
+            leftList.push({
+                id: `L_${i}_${Date.now()}_${Math.random()}`,
+                partText: pair.left,
+                pairId: i,
+                paired: false
+            });
+            rightList.push({
+                id: `R_${i}_${Date.now()}_${Math.random()}`,
+                partText: pair.right,
+                pairId: i,
+                paired: false
+            });
+        }
+        // 打乱顺序
+        for (let i = leftList.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [leftList[i], leftList[j]] = [leftList[j], leftList[i]];
+        }
+        for (let i = rightList.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [rightList[i], rightList[j]] = [rightList[j], rightList[i]];
+        }
+        return { leftList, rightList };
+    }
+
+    // 重置整个游戏状态
+    function resetGameState() {
+        const { leftList, rightList } = initGameData();
+        leftItems = leftList;
+        rightItems = rightList;
+        selectedLeftId = null;
+        currentScore = 0;
+        gameFinished = false;
+        document.getElementById('winMessage').style.display = 'none';
+        renderAll();
+        // 重置时如果音乐开启且游戏未结束，尝试播放背景音乐
+        if (musicEnabled && bgmAudio && !gameFinished) {
+            bgmAudio.play().catch(e => console.log("重置后播放失败:", e));
+        }
+    }
+
+    // 渲染界面
+    function renderAll() {
+        const leftContainer = document.getElementById('leftPartsContainer');
+        leftContainer.innerHTML = '';
+        leftItems.forEach(part => {
+            const card = document.createElement('div');
+            card.className = `part-card ${selectedLeftId === part.id ? 'selected' : ''} ${part.paired ? 'paired' : ''}`;
+            if (!part.paired) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (gameFinished) return;
+                    handleLeftClick(part.id);
+                });
+            }
+            card.innerText = part.partText;
+            leftContainer.appendChild(card);
+        });
+
+        const rightContainer = document.getElementById('rightPartsContainer');
+        rightContainer.innerHTML = '';
+        rightItems.forEach(part => {
+            const card = document.createElement('div');
+            card.className = `part-card ${part.paired ? 'paired' : ''}`;
+            if (!part.paired) {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (gameFinished) return;
+                    handleRightClick(part.id);
+                });
+            }
+            card.innerText = part.partText;
+            rightContainer.appendChild(card);
+        });
+
+        document.getElementById('scoreValue').innerText = currentScore;
+        document.getElementById('totalCount').innerText = TOTAL_PAIRS;
+
+        const wallContainer = document.getElementById('wallContainer');
+        wallContainer.innerHTML = '';
+        const pairedPairs = new Set();
+        for (let l of leftItems) {
+            if (l.paired) pairedPairs.add(l.pairId);
+        }
+        const pairedCharacters = [];
+        for (let i = 0; i < HANZI_PAIRS.length; i++) {
+            if (pairedPairs.has(i)) {
+                pairedCharacters.push(HANZI_PAIRS[i].character);
+            }
+        }
+        pairedCharacters.forEach(ch => {
+            const wallCard = document.createElement('div');
+            wallCard.className = 'wall-card';
+            wallCard.innerText = ch;
+            wallContainer.appendChild(wallCard);
+        });
+
+        if (currentScore === TOTAL_PAIRS && !gameFinished) {
+            gameFinished = true;
+            const winDiv = document.getElementById('winMessage');
+            winDiv.style.display = 'block';
+            playWinMelody();
+            if (bgmAudio) {
+                bgmAudio.pause();
+            }
+        } else if (currentScore !== TOTAL_PAIRS && gameFinished) {
+            gameFinished = false;
+            document.getElementById('winMessage').style.display = 'none';
+            if (musicEnabled && bgmAudio) {
+                bgmAudio.play().catch(e => console.log("恢复播放失败", e));
+            }
+        }
+    }
+
+    function handleLeftClick(leftId) {
+        const leftPart = leftItems.find(p => p.id === leftId);
+        if (!leftPart || leftPart.paired) return;
+
+        if (selectedLeftId === leftId) {
+            selectedLeftId = null;
+            renderAll();
+            return;
+        }
+        selectedLeftId = leftId;
+        renderAll();
+    }
+
+    function handleRightClick(rightId) {
+        const rightPart = rightItems.find(p => p.id === rightId);
+        if (!rightPart || rightPart.paired) return;
+
+        if (selectedLeftId === null) {
+            flashNoSelection();
+            return;
+        }
+
+        const leftPart = leftItems.find(p => p.id === selectedLeftId);
+        if (!leftPart || leftPart.paired) {
+            selectedLeftId = null;
+            renderAll();
+            return;
+        }
+
+        if (leftPart.pairId === rightPart.pairId) {
+            if (!leftPart.paired && !rightPart.paired) {
+                leftPart.paired = true;
+                rightPart.paired = true;
+                currentScore++;
+                playSuccessSound();
+
+                const character = HANZI_PAIRS[leftPart.pairId].character;
+                createFlyToWall(character);
+
+                selectedLeftId = null;
+                renderAll();
+            } else {
+                selectedLeftId = null;
+                renderAll();
+            }
+        } else {
+            playErrorSound();
+            selectedLeftId = null;
+            renderAll();
+        }
+    }
+
+    function flashNoSelection() {
+        const rightCol = document.querySelector('.pair-zone .part-column:last-child');
+        if (rightCol) {
+            rightCol.style.transition = '0.08s';
+            rightCol.style.backgroundColor = '#ffe0b3';
+            setTimeout(() => {
+                rightCol.style.backgroundColor = '';
+            }, 200);
+        }
+    }
+
+    function createFlyToWall(character) {
+        const wallRect = document.getElementById('wallContainer').getBoundingClientRect();
+        const flyer = document.createElement('div');
+        flyer.className = 'fly-card';
+        flyer.innerText = character;
+        const startX = window.innerWidth / 2 - 40;
+        const startY = window.innerHeight * 0.6;
+        flyer.style.left = startX + 'px';
+        flyer.style.top = startY + 'px';
+        document.body.appendChild(flyer);
+        const targetX = wallRect.right - 70;
+        const targetY = wallRect.top + 25;
+        requestAnimationFrame(() => {
+            flyer.style.transform = `translate(${targetX - startX}px, ${targetY - startY - 80}px) scale(0.55)`;
+            flyer.style.opacity = '0.7';
+        });
+        setTimeout(() => {
+            flyer.remove();
+        }, 500);
+    }
+
+    // ---------- 配对音效 (使用 Web Audio) ----------
+    function initAudio() {
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function playSuccessSound() {
+        if (!musicEnabled) return;
+        try {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+            osc.start();
+            osc.stop(now + 0.45);
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.frequency.value = 1174.66;
+            gain2.gain.setValueAtTime(0.2, now + 0.12);
+            gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+            osc2.start(now + 0.12);
+            osc2.stop(now + 0.6);
+        } catch(e) { console.warn(e); }
+    }
+
+    function playErrorSound() {
+        if (!musicEnabled) return;
+        try {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = 440;
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+        } catch(e) {}
+    }
+
+    function playWinMelody() {
+        if (!musicEnabled) return;
+        try {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const melody = [523.25, 659.25, 783.99, 523.25, 880, 783.99];
+            let time = audioCtx.currentTime;
+            melody.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.25, time + idx * 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.0001, time + idx * 0.2 + 0.55);
+                osc.start(time + idx * 0.2);
+                osc.stop(time + idx * 0.2 + 0.5);
+            });
+        } catch(e) {}
+    }
+
+    // ---------- 背景音乐控制 (本地 MP3) ----------
+    function initBackgroundMusic() {
+        bgmAudio = document.getElementById('bgmAudio');
+        if (!bgmAudio) return;
+        bgmAudio.volume = 0.3;    // 音量30%
+        bgmAudio.loop = true;
+        // 预加载，但不自动播放
+    }
+
+    function toggleMusic() {
+        musicEnabled = !musicEnabled;
+        const btn = document.getElementById('musicToggleBtn');
+        if (musicEnabled) {
+            btn.innerHTML = '🎵 音乐开';
+            if (bgmAudio && !gameFinished) {
+                bgmAudio.play().catch(e => console.log("播放失败:", e));
+            }
+        } else {
+            btn.innerHTML = '🔇 音乐关';
+            if (bgmAudio) {
+                bgmAudio.pause();
+            }
+        }
+    }
+
+    // 用户首次交互 (点击任意位置) 激活所有音频
+    let hasUserInteracted = false;
+    function enableAudioOnFirstInteraction() {
+        if (hasUserInteracted) return;
+        hasUserInteracted = true;
+        
+        console.log("用户首次交互，激活背景音乐和音效");
+        // 激活配对音效的 AudioContext
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        // 尝试播放背景音乐（如果开关开启且游戏未胜利）
+        if (musicEnabled && bgmAudio && !gameFinished) {
+            bgmAudio.play().catch(e => console.log("背景音乐播放失败:", e));
+        }
+        
+        const hint = document.getElementById('musicHint');
+        if (hint) {
+            hint.style.opacity = '0';
+            setTimeout(() => { if(hint) hint.style.display = 'none'; }, 1000);
+        }
+        
+        document.removeEventListener('click', enableAudioOnFirstInteraction);
+        document.removeEventListener('touchstart', enableAudioOnFirstInteraction);
+    }
+
+    function resetGame() {
+        resetGameState();
+    }
+
+    function init() {
+        const { leftList, rightList } = initGameData();
+        leftItems = leftList;
+        rightItems = rightList;
+        selectedLeftId = null;
+        currentScore = 0;
+        gameFinished = false;
+        renderAll();
+
+        document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+        document.getElementById('musicToggleBtn').addEventListener('click', toggleMusic);
+        
+        document.addEventListener('click', enableAudioOnFirstInteraction);
+        document.addEventListener('touchstart', enableAudioOnFirstInteraction);
+        
+        initAudio();
+        initBackgroundMusic();
+    }
+
+    init();
+</script>
+</body>
+</html>
